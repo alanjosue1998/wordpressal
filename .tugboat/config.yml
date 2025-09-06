@@ -24,8 +24,7 @@ services:
         - sed -i "s/password_here/tugboat/g" ${DOCROOT}/wp-config-tugboat.php
         - sed -i "s/localhost/mysql/g" ${DOCROOT}/wp-config-tugboat.php
         - sed -i "s/wp_/wp_/g" ${DOCROOT}/wp-config-tugboat.php
-        # Agregar claves de seguridad
-        - curl -s https://api.wordpress.org/secret-key/1.1/salt/ >> ${DOCROOT}/wp-config-tugboat.php
+        # Las claves ya están en wp-config-sample.php, no agregar más
         # Agregar configuración de URLs dinámicas para Tugboat
         - echo "define('WP_HOME', 'https://' . \$_SERVER['HTTP_HOST']);" >> ${DOCROOT}/wp-config-tugboat.php
         - echo "define('WP_SITEURL', 'https://' . \$_SERVER['HTTP_HOST']);" >> ${DOCROOT}/wp-config-tugboat.php
