@@ -17,11 +17,20 @@ services:
         - chgrp -R www-data "${DOCROOT}/wp-content/uploads"
         - find "${DOCROOT}/wp-content/uploads" -type d -exec chmod 2775 {} \;
         - find "${DOCROOT}/wp-content/uploads" -type f -exec chmod 0664 {} \;
-        # Configurar base de datos para Tugboat usando variables de entorno
-        - echo "define('DB_NAME', 'tugboat');" >> ${DOCROOT}/wp-config.php
-        - echo "define('DB_USER', 'tugboat');" >> ${DOCROOT}/wp-config.php
-        - echo "define('DB_PASSWORD', 'tugboat');" >> ${DOCROOT}/wp-config.php
-        - echo "define('DB_HOST', 'mysql');" >> ${DOCROOT}/wp-config.php
+        # Crear wp-config.php específico para Tugboat
+        - cp ${DOCROOT}/wp-config-sample.php ${DOCROOT}/wp-config-tugboat.php
+        - sed -i "s/database_name_here/tugboat/g" ${DOCROOT}/wp-config-tugboat.php
+        - sed -i "s/username_here/tugboat/g" ${DOCROOT}/wp-config-tugboat.php
+        - sed -i "s/password_here/tugboat/g" ${DOCROOT}/wp-config-tugboat.php
+        - sed -i "s/localhost/mysql/g" ${DOCROOT}/wp-config-tugboat.php
+        - sed -i "s/wp_/wp_/g" ${DOCROOT}/wp-config-tugboat.php
+        # Agregar claves de seguridad
+        - curl -s https://api.wordpress.org/secret-key/1.1/salt/ >> ${DOCROOT}/wp-config-tugboat.php
+        # Agregar configuración de URLs dinámicas para Tugboat
+        - echo "define('WP_HOME', 'https://' . \$_SERVER['HTTP_HOST']);" >> ${DOCROOT}/wp-config-tugboat.php
+        - echo "define('WP_SITEURL', 'https://' . \$_SERVER['HTTP_HOST']);" >> ${DOCROOT}/wp-config-tugboat.php
+        # Reemplazar wp-config.php con la versión de Tugboat
+        - mv ${DOCROOT}/wp-config-tugboat.php ${DOCROOT}/wp-config.php
       build:
         # Importar base de datos si existe
         - if [ -f "${TUGBOAT_ROOT}/database.sql" ]; then mysql -h mysql -u tugboat -ptugboat tugboat < ${TUGBOAT_ROOT}/database.sql; fi
